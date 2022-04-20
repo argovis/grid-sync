@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rg-grid-load
+  labels:
+    tier: api
+spec:
+  volumes:
+    - name: grids
+      persistentVolumeClaim:
+        claimName: grids
+  containers:
+  - name: sync
+    imagePullPolicy: Always
+    image: argovis/grid-sync:rg
+    #command: ['sleep', '10000000000']
+    command: ['python', 'translate-rg-grid.py', 'temp', 'anom']
+    volumeMounts:
+      - mountPath: "/tmp"
+        name: grids
+    resources:
+      requests:
+        memory: "0Gi"
+        cpu: "0m"
+      limits:
+        memory: 2Gi
+        cpu: 500m
+  restartPolicy: Never

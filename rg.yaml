@@ -14,7 +14,7 @@ spec:
     imagePullPolicy: Always
     image: argovis/grid-sync:rg
     #command: ['sleep', '10000000000']
-    command: ['python', 'translate-rg-grid.py', 'temp', 'anom']
+    command: ['python', 'translate-rg-grid.py', 'temp', 'total']
     volumeMounts:
       - mountPath: "/tmp"
         name: grids

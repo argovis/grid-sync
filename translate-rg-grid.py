@@ -56,10 +56,9 @@ for t in timesteps:
 			elif var == 'psal' and grid=='anom':
 				data['d'] = list(clim['ARGO_SALINITY_ANOMALY'].loc[dict(LONGITUDE=lon, LATITUDE=lat, TIME=t)].data)
 			elif var == 'temp' and grid == 'total':
-				data['d'] = list((clim['ARGO_TEMPERATURE_ANOMALY'] + clim['ARGO_TEMPERATURE_MEAN']).loc[dict(LONGITUDE=lon, LATITUDE=lat, TIME=t)].data)
+				data['d'] = list(clim['ARGO_TEMPERATURE_ANOMALY'].loc[dict(LONGITUDE=lon, LATITUDE=lat, TIME=t)].data +  clim['ARGO_TEMPERATURE_MEAN'].loc[dict(LONGITUDE=lon, LATITUDE=lat)].data)
 			elif var == 'psal' and grid == 'total':
-				data['d'] = list((clim['ARGO_SALINITY_ANOMALY'] + clim['ARGO_SALINITY_MEAN']).loc[dict(LONGITUDE=lon, LATITUDE=lat, TIME=t)].data)
-
+				data['d'] = list(clim['ARGO_SALINITY_ANOMALY'].loc[dict(LONGITUDE=lon, LATITUDE=lat, TIME=t)].data +  clim['ARGO_SALINITY_MEAN'].loc[dict(LONGITUDE=lon, LATITUDE=lat)].data)
 			# nothing to record, drop it
 			if numpy.isnan(data['d']).all():
 				continue 

@@ -3,12 +3,13 @@ import numpy as np
 import scipy.io, datetime
 import xarray as xr
 from pymongo import MongoClient
+import util.helpers as h
 
 client = MongoClient('mongodb://database/argo')
 db = client.argo
 
 # extract data from .mat to xarray, compliments Jacopo
-mat=scipy.io.loadmat('data/fullFieldSpaceTrendPchipPotTempGCOS_0015_0300_5_20_10_tseries_global_Blanca.mat')
+mat=scipy.io.loadmat('/tmp/ohc/fullFieldSpaceTrendPchipPotTempGCOS_0015_0300_5_20_10_tseries_global_Blanca.mat')
 lon = np.arange(start=20.5, stop=380.5, step=1)
 lat = np.arange(start=-64.5, stop=65.5, step=1)
 time = pd.date_range("2005-01-15", periods=192, freq = '1M')
@@ -32,7 +33,7 @@ bfr = xr.DataArray(
 
 # construct a metadata record
 meta = {}
-meta['_id'] = 'OHC'
+meta['_id'] = 'ohc'
 meta['units'] = 'J/m^2'
 meta['levels'] = [15] # really anywhere from 15-300
 meta['date_added'] = datetime.datetime.now()
@@ -50,11 +51,12 @@ latpoints = list(bfr['LATITUDE'].data)
 lonpoints = list(bfr['LONGITUDE'].data)
 
 for t in timesteps:
+	ts = (t - np.datetime64('1970-01-01T00:00:00Z')) / np.timedelta64(1, 's')
 	for lat in latpoints:
 		for lon in lonpoints:
 			data = {
-				"g": {"type":"Point", "coordinates":[float(lon),float(lat)]},
-				"t": t,
+				"g": {"type":"Point", "coordinates":[float(h.tidylon(lon)),float(lat)]},
+				"t": datetime.datetime.utcfromtimestamp(ts),
 				"d": [bfr.loc[dict(LONGITUDE=lon, LATITUDE=lat, TIME=t)].data]
 			}
 

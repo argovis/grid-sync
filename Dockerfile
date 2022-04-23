@@ -8,4 +8,5 @@ RUN pip install nose netCDF4 pymongo xarray numpy geopy scipy
 WORKDIR /app
 COPY translate-rg-grid.py translate-rg-grid.py
 COPY translate-ohc-grid.py translate-ohc-grid.py
+COPY util util
 RUN chown -R 1000660000 /app

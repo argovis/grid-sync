@@ -17,6 +17,11 @@ elif var=='psal':
 clim = xarray.open_dataset(input_clim, decode_times=False)
 
 # construct a metadata record
+timesteps = list(clim['TIME'].data) # months since 2004-01-01T00:00:00Z
+dates = [datetime.datetime(year=2004, month=1, day=15) + dateutil.relativedelta.relativedelta(months=math.floor(t)) for t in timesteps]
+latpoints = [float(x) for x in list(clim['LATITUDE'].data)]
+lonpoints = [float(h.tidylon(x)) for x in list(clim['LONGITUDE'].data)]
+
 meta = {}
 if var=='temp':
 	meta['_id'] = 'rgTemp'
@@ -32,6 +37,11 @@ elif grid=='total':
 meta['levels'] = list(clim['PRESSURE'].data)
 meta['levels'] = [float(x) for x in meta['levels']]
 meta['date_added'] = datetime.datetime.now()
+meta['lonrange'] = [min(lonpoints), max(lonpoints)]
+meta['latrange'] = [min(latpoints), max(latpoints)]
+meta['timetange'] = [min(dates), max(dates)]
+meta['loncell'] = 1
+meta['latcell'] = 1
 
 # write metadata to grid metadata collection
 try:
@@ -41,16 +51,13 @@ except BaseException as err:
 	print(err)
 	print(meta)
 
-# construct data records
-timesteps = list(clim['TIME'].data) # months since 2004-01-01T00:00:00Z
-latpoints = list(clim['LATITUDE'].data)
-lonpoints = list(clim['LONGITUDE'].data)
 
+# construct data records
 for t in timesteps:
 	for lat in latpoints:
 		for lon in lonpoints:
 			data = {
-				"g": {"type":"Point", "coordinates":[float(h.tidylon(lon)),float(lat)]},
+				"g": {"type":"Point", "coordinates":[lon,lat]},
 				"t": datetime.datetime(year=2004, month=1, day=15) + dateutil.relativedelta.relativedelta(months=math.floor(t))
 			}
 			if var == 'temp' and grid =='anom':

@@ -44,7 +44,7 @@ meta['levels'] = [15] # really anywhere from 15-300
 meta['date_added'] = datetime.datetime.now()
 meta['lonrange'] = [min(lonpoints), max(lonpoints)]
 meta['latrange'] = [min(latpoints), max(latpoints)]
-meta['timetange'] = [min(dates), max(dates)]
+meta['timerange'] = [min(dates), max(dates)]
 meta['loncell'] = 1
 meta['latcell'] = 1
 

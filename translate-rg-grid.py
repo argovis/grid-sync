@@ -39,7 +39,7 @@ meta['levels'] = [float(x) for x in meta['levels']]
 meta['date_added'] = datetime.datetime.now()
 meta['lonrange'] = [min(lonpoints), max(lonpoints)]
 meta['latrange'] = [min(latpoints), max(latpoints)]
-meta['timetange'] = [min(dates), max(dates)]
+meta['timerange'] = [min(dates), max(dates)]
 meta['loncell'] = 1
 meta['latcell'] = 1
 
@@ -85,9 +85,3 @@ for t in timesteps:
 				print('error: db write failure')
 				print(err)
 				print(data)
-
-
-
-
-
-

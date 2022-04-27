@@ -32,11 +32,22 @@ bfr = xr.DataArray(
 
 
 # construct a metadata record
+timesteps = list(bfr['TIME'].data) 
+dates = [datetime.datetime.utcfromtimestamp((t - np.datetime64('1970-01-01T00:00:00Z')) / np.timedelta64(1, 's')) for t in timesteps]
+latpoints = [float(x) for x in list(bfr['LATITUDE'].data)]
+lonpoints = [float(h.tidylon(x)) for x in list(bfr['LONGITUDE'].data)]
+
 meta = {}
 meta['_id'] = 'ohc'
 meta['units'] = 'J/m^2'
 meta['levels'] = [15] # really anywhere from 15-300
 meta['date_added'] = datetime.datetime.now()
+meta['lonrange'] = [min(lonpoints), max(lonpoints)]
+meta['latrange'] = [min(latpoints), max(latpoints)]
+meta['timetange'] = [min(dates), max(dates)]
+meta['loncell'] = 1
+meta['latcell'] = 1
+
 # write metadata to grid metadata collection
 try:
 	db['grids-meta'].insert_one(meta)
@@ -46,16 +57,12 @@ except BaseException as err:
 	print(meta)
 
 # construct data records
-timesteps = list(bfr['TIME'].data)
-latpoints = list(bfr['LATITUDE'].data)
-lonpoints = list(bfr['LONGITUDE'].data)
-
 for t in timesteps:
 	ts = (t - np.datetime64('1970-01-01T00:00:00Z')) / np.timedelta64(1, 's')
 	for lat in latpoints:
 		for lon in lonpoints:
 			data = {
-				"g": {"type":"Point", "coordinates":[float(h.tidylon(lon)),float(lat)]},
+				"g": {"type":"Point", "coordinates":[lon,lat]},
 				"t": datetime.datetime.utcfromtimestamp(ts),
 				"d": [bfr.loc[dict(LONGITUDE=lon, LATITUDE=lat, TIME=t)].data]
 			}

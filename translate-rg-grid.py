@@ -51,13 +51,15 @@ except BaseException as err:
 	print(err)
 	print(meta)
 
+# restore lonpoints to non-tidied version so we can use it for xarray indexing
+lonpoints = [float(x) for x in list(clim['LONGITUDE'].data)]
 
 # construct data records
 for t in timesteps:
 	for lat in latpoints:
 		for lon in lonpoints:
 			data = {
-				"g": {"type":"Point", "coordinates":[lon,lat]},
+				"g": {"type":"Point", "coordinates":[h.tidylon(lon),lat]},
 				"t": datetime.datetime(year=2004, month=1, day=15) + dateutil.relativedelta.relativedelta(months=math.floor(t))
 			}
 			if var == 'temp' and grid =='anom':

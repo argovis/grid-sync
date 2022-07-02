@@ -12,7 +12,8 @@ db = client.argo
 mat=scipy.io.loadmat('/tmp/ohc/fullFieldSpaceTrendPchipPotTempGCOS_0015_0300_5_20_10_tseries_global_Blanca.mat')
 lon = np.arange(start=20.5, stop=380.5, step=1)
 lat = np.arange(start=-64.5, stop=65.5, step=1)
-time = pd.date_range("2005-01-15", periods=192, freq = '1M')
+time = pd.date_range("2005-01-01", periods=192, freq='MS')
+time += datetime.timedelta(days=14)
 d_GCOS_temp_zint = mat['d_GCOS_temp_zint']
 d_GCOS_temp_zint = np.moveaxis(d_GCOS_temp_zint, 2, 0)
 d_GCOS_temp_zint = np.moveaxis(d_GCOS_temp_zint, 2, 1)
@@ -35,14 +36,15 @@ bfr = xr.DataArray(
 timesteps = list(bfr['TIME'].data) 
 dates = [datetime.datetime.utcfromtimestamp((t - np.datetime64('1970-01-01T00:00:00Z')) / np.timedelta64(1, 's')) for t in timesteps]
 latpoints = [float(x) for x in list(bfr['LATITUDE'].data)]
-lonpoints = [float(h.tidylon(x)) for x in list(bfr['LONGITUDE'].data)]
+lonpoints = [float(x) for x in list(bfr['LONGITUDE'].data)]
+tidylon = [h.tidylon(x) for x in lonpoints]
 
 meta = {}
 meta['_id'] = 'ohc'
 meta['units'] = 'J/m^2'
 meta['levels'] = [15] # really anywhere from 15-300
 meta['date_added'] = datetime.datetime.now()
-meta['lonrange'] = [min(lonpoints), max(lonpoints)]
+meta['lonrange'] = [min(tidylon), max(tidylon)]
 meta['latrange'] = [min(latpoints), max(latpoints)]
 meta['timerange'] = [min(dates), max(dates)]
 meta['loncell'] = 1
@@ -62,7 +64,7 @@ for t in timesteps:
 	for lat in latpoints:
 		for lon in lonpoints:
 			data = {
-				"g": {"type":"Point", "coordinates":[lon,lat]},
+				"g": {"type":"Point", "coordinates":[h.tidylon(lon),lat]},
 				"t": datetime.datetime.utcfromtimestamp(ts),
 				"d": [bfr.loc[dict(LONGITUDE=lon, LATITUDE=lat, TIME=t)].data]
 			}

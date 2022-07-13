@@ -7,7 +7,7 @@ import util.helpers as h
 
 client = MongoClient('mongodb://database/argo')
 db = client.argo
-basins = xarray.open_dataset('parameters/basinmask_01.nc')
+basins = xr.open_dataset('parameters/basinmask_01.nc')
 
 # extract data from .mat to xarray, compliments Jacopo
 mat=scipy.io.loadmat('/tmp/ohc/fullFieldSpaceTrendPchipPotTempGCOS_0015_0300_5_20_10_tseries_global_Blanca.mat')
@@ -45,12 +45,12 @@ meta['_id'] = 'ohc'
 meta['data_type'] = 'ocean_heat_content'
 meta['data_keys'] = ['ohc']
 meta['units'] = ['J/m^2']
-meta['date_updated_argovis'] = datetime.datetime.now(),
-meta['source'] = {
-	'source': 'Kuusela_Giglio2022',
+meta['date_updated_argovis'] = datetime.datetime.now()
+meta['source'] = [{
+	'source': ['Kuusela_Giglio2022'],
 	'doi': '10.5281/zenodo.6131625',
 	'url': 'https://doi.org/10.5281/zenodo.6131625'
-}
+}]
 meta['levels'] = [15] # really anywhere from 15-300
 meta['lonrange'] = [min(tidylon), max(tidylon)]
 meta['latrange'] = [min(latpoints), max(latpoints)]
@@ -78,16 +78,14 @@ for t in timesteps:
 				"timestamp": datetime.datetime.utcfromtimestamp(ts),
 				"data": [bfr.loc[dict(LONGITUDE=lon, LATITUDE=lat, TIME=t)].data]
 			}
+			data['_id'] = data['timestamp'].strftime('%Y%m%d%H%M%S') + '_' + str(h.tidylon(lon)) + '_' + str(lat)
 
 			# nothing to record, drop it
 			if np.isnan(data['data']).all():
 				continue 
 
-			# mongo doesn't like numpy types
-			data['data'] = [float(x) for x in data['data']]
-
-			# only keep 6 decimal places
-			data['data'] = [i if type(i) is not float else round(i,6) for i in data['data']]
+			# mongo doesn't like numpy types, only want 6 decimal places, and standard format requires each level be its own list:
+			data['data'] = [[round(float(x),6)] for x in data['data']]
 
 			# write data to grid data collection
 			try:

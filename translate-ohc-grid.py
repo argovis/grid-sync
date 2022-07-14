@@ -41,9 +41,9 @@ lonpoints = [float(x) for x in list(bfr['LONGITUDE'].data)]
 tidylon = [h.tidylon(x) for x in lonpoints]
 
 meta = {}
-meta['_id'] = 'ohc'
+meta['_id'] = 'ohc_kg'
 meta['data_type'] = 'ocean_heat_content'
-meta['data_keys'] = ['ohc']
+meta['data_keys'] = ['ohc_kg']
 meta['units'] = ['J/m^2']
 meta['date_updated_argovis'] = datetime.datetime.now()
 meta['source'] = [{
@@ -72,7 +72,7 @@ for t in timesteps:
 	for lat in latpoints:
 		for lon in lonpoints:
 			data = {
-				"metadata": "ohc",
+				"metadata": "ohc_kg",
 				"geolocation": {"type":"Point", "coordinates":[h.tidylon(lon),lat]},
 				"basin": h.find_basin(basins, h.tidylon(lon), lat),
 				"timestamp": datetime.datetime.utcfromtimestamp(ts),
@@ -89,7 +89,7 @@ for t in timesteps:
 
 			# write data to grid data collection
 			try:
-				db['ohcx'].insert_one(data)
+				db['ohc_kg'].insert_one(data)
 			except BaseException as err:
 				print('error: db write failure')
 				print(err)

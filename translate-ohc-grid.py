@@ -7,6 +7,7 @@ import util.helpers as h
 
 client = MongoClient('mongodb://database/argo')
 db = client.argo
+basins = xr.open_dataset('parameters/basinmask_01.nc')
 
 # extract data from .mat to xarray, compliments Jacopo
 mat=scipy.io.loadmat('/tmp/ohc/fullFieldSpaceTrendPchipPotTempGCOS_0015_0300_5_20_10_tseries_global_Blanca.mat')
@@ -40,10 +41,17 @@ lonpoints = [float(x) for x in list(bfr['LONGITUDE'].data)]
 tidylon = [h.tidylon(x) for x in lonpoints]
 
 meta = {}
-meta['_id'] = 'ohc'
-meta['units'] = 'J/m^2'
+meta['_id'] = 'ohc_kg'
+meta['data_type'] = 'ocean_heat_content'
+meta['data_keys'] = ['ohc_kg']
+meta['units'] = ['J/m^2']
+meta['date_updated_argovis'] = datetime.datetime.now()
+meta['source'] = [{
+	'source': ['Kuusela_Giglio2022'],
+	'doi': '10.5281/zenodo.6131625',
+	'url': 'https://doi.org/10.5281/zenodo.6131625'
+}]
 meta['levels'] = [15] # really anywhere from 15-300
-meta['date_added'] = datetime.datetime.now()
 meta['lonrange'] = [min(tidylon), max(tidylon)]
 meta['latrange'] = [min(latpoints), max(latpoints)]
 meta['timerange'] = [min(dates), max(dates)]
@@ -52,7 +60,7 @@ meta['latcell'] = 1
 
 # write metadata to grid metadata collection
 try:
-	db['grids-meta'].insert_one(meta)
+	db['gridMetax'].insert_one(meta)
 except BaseException as err:
 	print('error: db write failure')
 	print(err)
@@ -64,24 +72,24 @@ for t in timesteps:
 	for lat in latpoints:
 		for lon in lonpoints:
 			data = {
-				"g": {"type":"Point", "coordinates":[h.tidylon(lon),lat]},
-				"t": datetime.datetime.utcfromtimestamp(ts),
-				"d": [bfr.loc[dict(LONGITUDE=lon, LATITUDE=lat, TIME=t)].data]
+				"metadata": "ohc_kg",
+				"geolocation": {"type":"Point", "coordinates":[h.tidylon(lon),lat]},
+				"basin": h.find_basin(basins, h.tidylon(lon), lat),
+				"timestamp": datetime.datetime.utcfromtimestamp(ts),
+				"data": [bfr.loc[dict(LONGITUDE=lon, LATITUDE=lat, TIME=t)].data]
 			}
+			data['_id'] = data['timestamp'].strftime('%Y%m%d%H%M%S') + '_' + str(h.tidylon(lon)) + '_' + str(lat)
 
 			# nothing to record, drop it
-			if np.isnan(data['d']).all():
+			if np.isnan(data['data']).all():
 				continue 
 
-			# mongo doesn't like numpy types
-			data['d'] = [float(x) for x in data['d']]
-
-			# only keep 6 decimal places
-			data['d'] = [i if type(i) is not float else round(i,6) for i in data['d']]
+			# mongo doesn't like numpy types, only want 6 decimal places, and standard format requires each level be its own list:
+			data['data'] = [[round(float(x),6)] for x in data['data']]
 
 			# write data to grid data collection
 			try:
-				db[meta['_id']].insert_one(data)
+				db['ohc_kg'].insert_one(data)
 			except BaseException as err:
 				print('error: db write failure')
 				print(err)

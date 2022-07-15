@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: rg-grid-load
+  name: rgtemp-grid-load
   labels:
     tier: api
 spec:
@@ -14,8 +14,9 @@ spec:
     imagePullPolicy: Always
     image: argovis/grid-sync:rg
     #command: ['sleep', '10000000000']
-    command: ['python', 'translate-rg-grid.py', 'temp', 'total']
-    #command: ['python', 'translate-rg-grid.py', 'psal', 'total']
+    #command: ['python', 'translate-rg-grid.py', 'temp', 'total', '200401', 'base', 'https://sio-argo.ucsd.edu/gilson/argo_climatology/RG_ArgoClim_Temperature_2019.nc.gz']
+    command: ['python', 'translate-rg-grid.py', 'temp', 'total', '201901', '/tmp/rg/RG_ArgoClim_201901_2019.nc', 'https://sio-argo.ucsd.edu/gilson/argo_climatology/RG_ArgoClim_201901_2019.nc.gz']
+    #command: ['python', 'translate-rg-grid.py', 'psal', 'total', '200401', 'base', 'https://sio-argo.ucsd.edu/gilson/argo_climatology/RG_ArgoClim_Salinity_2019.nc.gz']
     #command: ['python', 'translate-ohc-grid.py']
     volumeMounts:
       - mountPath: "/tmp"

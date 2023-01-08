@@ -60,7 +60,7 @@ meta['levels'] = [float(x) for x in meta['levels']]
 
 # write metadata to grid metadata collection
 try:
-	db['gridMetax'].insert_one(meta)
+	db['gridMeta'].insert_one(meta)
 except BaseException as err:
 	print('error: db write failure')
 	print(err)

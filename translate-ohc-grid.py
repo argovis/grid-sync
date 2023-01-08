@@ -58,7 +58,7 @@ meta['levels'] = [15] # really anywhere from 15-300
 
 # write metadata to grid metadata collection
 try:
-	db['gridMetax'].insert_one(meta)
+	db['gridMeta'].insert_one(meta)
 except BaseException as err:
 	print('error: db write failure')
 	print(err)

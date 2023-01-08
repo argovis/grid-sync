@@ -1,7 +1,7 @@
-#python translate-rg-grid.py temp total 200401 base https://sio-argo.ucsd.edu/gilson/argo_climatology/RG_ArgoClim_Temperature_2019.nc.gz
-#echo 200401 complete
-#python translate-rg-grid.py temp total 201901 /tmp/rg/RG_ArgoClim_201901_2019.nc https://sio-argo.ucsd.edu/gilson/argo_climatology/RG_ArgoClim_201901_2019.nc.gz
-#echo 201901 complete
+python translate-rg-grid.py temp total 200401 base https://sio-argo.ucsd.edu/gilson/argo_climatology/RG_ArgoClim_Temperature_2019.nc.gz
+echo 200401 complete
+python translate-rg-grid.py temp total 201901 /tmp/rg/RG_ArgoClim_201901_2019.nc https://sio-argo.ucsd.edu/gilson/argo_climatology/RG_ArgoClim_201901_2019.nc.gz
+echo 201901 complete
 python translate-rg-grid.py temp total 201902 /tmp/rg/RG_ArgoClim_201902_2019.nc https://sio-argo.ucsd.edu/gilson/argo_climatology/RG_ArgoClim_201902_2019.nc.gz
 echo 201902 complete
 python translate-rg-grid.py temp total 201903 /tmp/rg/RG_ArgoClim_201903_2019.nc https://sio-argo.ucsd.edu/gilson/argo_climatology/RG_ArgoClim_201903_2019.nc.gz

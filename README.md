@@ -1,0 +1,3 @@
+## grid translation scripts
+
+This repo contains scripts to translate upstream gridded products from their original format into JSON docs appropriate for Argovis, and insert them into MongoDB. The expectation is that appropriate collections and indexes have already been created via [https://github.com/argovis/db-schema](https://github.com/argovis/db-schema). See usage instructions for each script at the top of the respective `translate-*` files.

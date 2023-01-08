@@ -1,3 +1,6 @@
+# usage: python translate-ohc-grid.py
+# expects the source .mat file in /tmp/ohc
+
 import pandas as pd
 import numpy as np
 import scipy.io, datetime
@@ -52,15 +55,10 @@ meta['source'] = [{
 	'url': 'https://doi.org/10.5281/zenodo.6131625'
 }]
 meta['levels'] = [15] # really anywhere from 15-300
-meta['lonrange'] = [min(tidylon), max(tidylon)]
-meta['latrange'] = [min(latpoints), max(latpoints)]
-meta['timerange'] = [min(dates), max(dates)]
-meta['loncell'] = 1
-meta['latcell'] = 1
 
 # write metadata to grid metadata collection
 try:
-	db['gridMetax'].insert_one(meta)
+	db['gridMeta'].insert_one(meta)
 except BaseException as err:
 	print('error: db write failure')
 	print(err)
@@ -72,7 +70,7 @@ for t in timesteps:
 	for lat in latpoints:
 		for lon in lonpoints:
 			data = {
-				"metadata": "ohc_kg",
+				"metadata": ["ohc_kg"],
 				"geolocation": {"type":"Point", "coordinates":[h.tidylon(lon),lat]},
 				"basin": h.find_basin(basins, h.tidylon(lon), lat),
 				"timestamp": datetime.datetime.utcfromtimestamp(ts),
@@ -80,17 +78,36 @@ for t in timesteps:
 			}
 			data['_id'] = data['timestamp'].strftime('%Y%m%d%H%M%S') + '_' + str(h.tidylon(lon)) + '_' + str(lat)
 
+			data['data_keys'] = ['kg21_ohc15to300']
+			data['units'] = ['J/m^2']
+
 			# nothing to record, drop it
 			if np.isnan(data['data']).all():
 				continue 
 
-			# mongo doesn't like numpy types, only want 6 decimal places, and standard format requires each level be its own list:
-			data['data'] = [[round(float(x),6)] for x in data['data']]
+			# mongo doesn't like numpy types, only want 6 decimal places, and grid data is packed as [[grid 1's levels], [grid 2's levels, ...]]:
+			data['data'] = [[round(float(x),6) for x in data['data']]]
 
-			# write data to grid data collection
-			try:
-				db['ohc_kg'].insert_one(data)
-			except BaseException as err:
-				print('error: db write failure')
-				print(err)
-				print(data)
+			# check and see if this lat/long/timestamp lattice point already exists
+			record = db['grid_1_1_0.5_0.5'].find_one(data['_id'])
+			if record:
+				# append and replace
+				record['metadata'] = record['metadata'] + data['metadata']
+				record['data_keys'] = record['data_keys'] + data['data_keys']
+				record['data'] = record['data'] + data['data']
+				record['units'] = record['units'] + data['units']
+
+				try:
+					db['grid_1_1_0.5_0.5'].replace_one({'_id': data['_id']}, record)
+				except BaseException as err:
+					print('error: db write replace failure')
+					print(err)
+					print(data)
+			else:
+				# insert new record
+				try:
+					db['grid_1_1_0.5_0.5'].insert_one(data)
+				except BaseException as err:
+					print('error: db write insert failure')
+					print(err)
+					print(data)

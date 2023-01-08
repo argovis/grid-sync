@@ -1,4 +1,5 @@
 # usage: python translate-rg-grid.py <temp or psal> <anom or total> <start of file, format YYYYMM> <filesystem path to raw upstream delta file, or 'base' for the 2004-2018 base files> <original url of raw upstream file>
+# expects upstream data at /tmp/rg
 import xarray, sys, datetime, dateutil, math, numpy
 from pymongo import MongoClient
 import util.helpers as h
@@ -36,21 +37,14 @@ dates = [datetime.datetime(year=2004, month=1, day=15) + dateutil.relativedelta.
 latpoints = [float(x) for x in list(clim['LATITUDE'].data)]
 lonpoints = [float(h.tidylon(x)) for x in list(clim['LONGITUDE'].data)]
 metadata_suffix = '_' + str(startTime)
-data_collection = ''
 
 meta = {}
 if var=='temp':
-	data_collection = 'temperature_rg'
 	meta['_id'] = 'temperature_rg' + metadata_suffix
 	meta['data_type'] = 'temperature'
-	meta['data_keys'] = ['temperature_rg']
-	meta['units'] = ['degree celcius (ITS-90)']
 elif var=='psal':
-	data_collection = 'salinity_rg'
 	meta['_id'] = 'salinity_rg' + metadata_suffix
 	meta['data_type'] = 'salinity'
-	meta['data_keys'] = ['salinity_rg']
-	meta['units'] = ['psu']
 if grid=='anom':
 	meta['_id'] += '_Anom'
 elif grid=='total':
@@ -63,15 +57,10 @@ meta['source'] = [{
 }]
 meta['levels'] = list(clim['PRESSURE'].data)
 meta['levels'] = [float(x) for x in meta['levels']]
-meta['lonrange'] = [min(lonpoints), max(lonpoints)]
-meta['latrange'] = [min(latpoints), max(latpoints)]
-meta['timerange'] = [min(dates), max(dates)]
-meta['loncell'] = 1
-meta['latcell'] = 1
 
 # write metadata to grid metadata collection
 try:
-	db['gridMetax'].insert_one(meta)
+	db['gridMeta'].insert_one(meta)
 except BaseException as err:
 	print('error: db write failure')
 	print(err)
@@ -80,17 +69,28 @@ except BaseException as err:
 # restore lonpoints to non-tidied version so we can use it for xarray indexing
 lonpoints = [float(x) for x in list(clim['LONGITUDE'].data)]
 
-# construct data records
 for t in timesteps:
 	for lat in latpoints:
 		for lon in lonpoints:
+			# construct single-grid data record
 			data = {
-				"metadata": meta['_id'],
+				"metadata": [meta['_id']],
 				"geolocation": {"type":"Point", "coordinates":[h.tidylon(lon),lat]},
 				"basin": h.find_basin(basins, h.tidylon(lon), lat),
 				"timestamp": datetime.datetime(year=2004, month=1, day=15) + dateutil.relativedelta.relativedelta(months=math.floor(t))
 			}
+			
 			data['_id'] = data['timestamp'].strftime('%Y%m%d%H%M%S') + '_' + str(h.tidylon(lon)) + '_' + str(lat)
+
+			data['data_keys'] = []
+			data['units'] = []
+			if var == 'temp':
+				data['data_keys'].append('rg09_temperature')
+				data['units'].append('degree celcius (ITS-90)')
+			elif var == 'psal':
+				data['data_keys'].append('rg09_salinity')
+				data['units'].append('psu')
+
 			if var == 'temp' and grid =='anom':
 				data['data'] = list(clim['ARGO_TEMPERATURE_ANOMALY'].loc[dict(LONGITUDE=lon, LATITUDE=lat, TIME=t)].data)
 			elif var == 'psal' and grid=='anom':
@@ -103,13 +103,31 @@ for t in timesteps:
 			if numpy.isnan(data['data']).all():
 				continue 
 
-			# mongo doesn't like numpy types, only want 6 decimal places, and standard format requires each level be its own list:
-			data['data'] = [[round(float(x),6)] for x in data['data']]
+			# mongo doesn't like numpy types, only want 6 decimal places, and grid data is packed as [[grid 1's levels], [grid 2's levels, ...]]:
+			data['data'] = [[round(float(x),6) for x in data['data']]]
 
-			# write data to appropriate data collection
-			try:
-				db[data_collection].insert_one(data)
-			except BaseException as err:
-				print('error: db write failure')
-				print(err)
-				print(data)
+			# check and see if this lat/long/timestamp lattice point already exists
+			record = db['grid_1_1_0.5_0.5'].find_one(data['_id'])
+			if record:
+				# append and replace
+				record['metadata'] = record['metadata'] + data['metadata']
+				record['data_keys'] = record['data_keys'] + data['data_keys']
+				record['data'] = record['data'] + data['data']
+				record['units'] = record['units'] + data['units']
+
+				try:
+					db['grid_1_1_0.5_0.5'].replace_one({'_id': data['_id']}, record)
+				except BaseException as err:
+					print('error: db write replace failure')
+					print(err)
+					print(data)
+			else:
+				# insert new record
+				try:
+					db['grid_1_1_0.5_0.5'].insert_one(data)
+				except BaseException as err:
+					print('error: db write insert failure')
+					print(err)
+					print(data)
+
+			

@@ -1,3 +1,6 @@
+# usage: python translate-ohc-grid.py
+# expects the source .mat file in /tmp/ohc
+
 import pandas as pd
 import numpy as np
 import scipy.io, datetime

@@ -1,4 +1,5 @@
 # usage: python translate-rg-grid.py <temp or psal> <anom or total> <start of file, format YYYYMM> <filesystem path to raw upstream delta file, or 'base' for the 2004-2018 base files> <original url of raw upstream file>
+# expects upstream data at /tmp/rg
 import xarray, sys, datetime, dateutil, math, numpy
 from pymongo import MongoClient
 import util.helpers as h

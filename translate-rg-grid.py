@@ -40,10 +40,10 @@ metadata_suffix = '_' + str(startTime)
 
 meta = {}
 if var=='temp':
-	meta['_id'] = 'temperature_rg' + metadata_suffix
+	meta['_id'] = "rg09_temperature" + metadata_suffix
 	meta['data_type'] = 'temperature'
 elif var=='psal':
-	meta['_id'] = 'salinity_rg' + metadata_suffix
+	meta['_id'] = "rg09_salinity" + metadata_suffix
 	meta['data_type'] = 'salinity'
 if grid=='anom':
 	meta['_id'] += '_Anom'

@@ -60,7 +60,7 @@ meta['levels'] = [float(x) for x in meta['levels']]
 
 # write metadata to grid metadata collection
 try:
-	db['grid_1_1_0.5_0.5Meta'].insert_one(meta)
+	db['grid_1_1_0.5_0.5Metax'].insert_one(meta)
 except BaseException as err:
 	print('error: db write failure')
 	print(err)
@@ -82,14 +82,19 @@ for t in timesteps:
 			
 			data['_id'] = data['timestamp'].strftime('%Y%m%d%H%M%S') + '_' + str(h.tidylon(lon)) + '_' + str(lat)
 
-			data['data_keys'] = []
-			data['units'] = []
+			data['data_info'] = []
 			if var == 'temp':
-				data['data_keys'].append('rg09_temperature')
-				data['units'].append('degree celcius (ITS-90)')
+				data_info = [
+					['rg09_temperature'],
+					['units'],
+					[['degree celcius (ITS-90)']]
+				]
 			elif var == 'psal':
-				data['data_keys'].append('rg09_salinity')
-				data['units'].append('psu')
+				data_info = [
+					['rg09_salinity'],
+					['units'],
+					[['psu']]
+				]
 
 			if var == 'temp' and grid =='anom':
 				data['data'] = list(clim['ARGO_TEMPERATURE_ANOMALY'].loc[dict(LONGITUDE=lon, LATITUDE=lat, TIME=t)].data)
@@ -107,16 +112,16 @@ for t in timesteps:
 			data['data'] = [[round(float(x),6) for x in data['data']]]
 
 			# check and see if this lat/long/timestamp lattice point already exists
-			record = db['grid_1_1_0.5_0.5'].find_one(data['_id'])
+			record = db['grid_1_1_0.5_0.5x'].find_one(data['_id'])
 			if record:
 				# append and replace
 				record['metadata'] = record['metadata'] + data['metadata']
-				record['data_keys'] = record['data_keys'] + data['data_keys']
 				record['data'] = record['data'] + data['data']
-				record['units'] = record['units'] + data['units']
+				record['data_info'][0] = record['data_info'][0] + data['data_info'][0]
+				record['data_info'][2] = record['data_info'][2] + data['data_info'][2]
 
 				try:
-					db['grid_1_1_0.5_0.5'].replace_one({'_id': data['_id']}, record)
+					db['grid_1_1_0.5_0.5x'].replace_one({'_id': data['_id']}, record)
 				except BaseException as err:
 					print('error: db write replace failure')
 					print(err)
@@ -124,7 +129,7 @@ for t in timesteps:
 			else:
 				# insert new record
 				try:
-					db['grid_1_1_0.5_0.5'].insert_one(data)
+					db['grid_1_1_0.5_0.5x'].insert_one(data)
 				except BaseException as err:
 					print('error: db write insert failure')
 					print(err)

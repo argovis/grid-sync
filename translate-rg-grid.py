@@ -42,9 +42,19 @@ meta = {}
 if var=='temp':
 	meta['_id'] = "rg09_temperature" + metadata_suffix
 	meta['data_type'] = 'temperature'
+	meta['data_info'] = [
+					['rg09_temperature'],
+					['units'],
+					[['degree celcius (ITS-90)']]
+				]
 elif var=='psal':
 	meta['_id'] = "rg09_salinity" + metadata_suffix
 	meta['data_type'] = 'salinity'
+	meta['data_info'] = [
+					['rg09_salinity'],
+					['units'],
+					[['psu']]
+				]
 if grid=='anom':
 	meta['_id'] += '_Anom'
 elif grid=='total':
@@ -80,21 +90,7 @@ for t in timesteps:
 				"timestamp": datetime.datetime(year=2004, month=1, day=15) + dateutil.relativedelta.relativedelta(months=math.floor(t))
 			}
 			
-			data['_id'] = data['timestamp'].strftime('%Y%m%d%H%M%S') + '_' + str(h.tidylon(lon)) + '_' + str(lat)
-
-			data['data_info'] = []
-			if var == 'temp':
-				data_info = [
-					['rg09_temperature'],
-					['units'],
-					[['degree celcius (ITS-90)']]
-				]
-			elif var == 'psal':
-				data_info = [
-					['rg09_salinity'],
-					['units'],
-					[['psu']]
-				]
+			data['_id'] = data['timestamp'].strftime('%Y%m%d%H%M%S') + '_' + str(h.tidylon(lon)) + '_' + str(lat)				
 
 			if var == 'temp' and grid =='anom':
 				data['data'] = list(clim['ARGO_TEMPERATURE_ANOMALY'].loc[dict(LONGITUDE=lon, LATITUDE=lat, TIME=t)].data)
@@ -117,8 +113,6 @@ for t in timesteps:
 				# append and replace
 				record['metadata'] = record['metadata'] + data['metadata']
 				record['data'] = record['data'] + data['data']
-				record['data_info'][0] = record['data_info'][0] + data['data_info'][0]
-				record['data_info'][2] = record['data_info'][2] + data['data_info'][2]
 
 				try:
 					db['grid_1_1_0.5_0.5x'].replace_one({'_id': data['_id']}, record)

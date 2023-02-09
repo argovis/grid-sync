@@ -70,7 +70,7 @@ meta['levels'] = [float(x) for x in meta['levels']]
 
 # write metadata to grid metadata collection
 try:
-	db['grid_1_1_0.5_0.5Metax'].insert_one(meta)
+	db['rg09Meta'].insert_one(meta)
 except BaseException as err:
 	print('error: db write failure')
 	print(err)
@@ -108,14 +108,14 @@ for t in timesteps:
 			data['data'] = [[round(float(x),6) for x in data['data']]]
 
 			# check and see if this lat/long/timestamp lattice point already exists
-			record = db['grid_1_1_0.5_0.5x'].find_one(data['_id'])
+			record = db['rg09'].find_one(data['_id'])
 			if record:
 				# append and replace
 				record['metadata'] = record['metadata'] + data['metadata']
 				record['data'] = record['data'] + data['data']
 
 				try:
-					db['grid_1_1_0.5_0.5x'].replace_one({'_id': data['_id']}, record)
+					db['rg09'].replace_one({'_id': data['_id']}, record)
 				except BaseException as err:
 					print('error: db write replace failure')
 					print(err)
@@ -123,7 +123,7 @@ for t in timesteps:
 			else:
 				# insert new record
 				try:
-					db['grid_1_1_0.5_0.5x'].insert_one(data)
+					db['rg09'].insert_one(data)
 				except BaseException as err:
 					print('error: db write insert failure')
 					print(err)

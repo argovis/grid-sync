@@ -42,9 +42,19 @@ meta = {}
 if var=='temp':
 	meta['_id'] = "rg09_temperature" + metadata_suffix
 	meta['data_type'] = 'temperature'
+	meta['data_info'] = [
+					['rg09_temperature'],
+					['units'],
+					[['degree celcius (ITS-90)']]
+				]
 elif var=='psal':
 	meta['_id'] = "rg09_salinity" + metadata_suffix
 	meta['data_type'] = 'salinity'
+	meta['data_info'] = [
+					['rg09_salinity'],
+					['units'],
+					[['psu']]
+				]
 if grid=='anom':
 	meta['_id'] += '_Anom'
 elif grid=='total':
@@ -60,7 +70,7 @@ meta['levels'] = [float(x) for x in meta['levels']]
 
 # write metadata to grid metadata collection
 try:
-	db['grid_1_1_0.5_0.5Meta'].insert_one(meta)
+	db['rg09Meta'].insert_one(meta)
 except BaseException as err:
 	print('error: db write failure')
 	print(err)
@@ -80,16 +90,7 @@ for t in timesteps:
 				"timestamp": datetime.datetime(year=2004, month=1, day=15) + dateutil.relativedelta.relativedelta(months=math.floor(t))
 			}
 			
-			data['_id'] = data['timestamp'].strftime('%Y%m%d%H%M%S') + '_' + str(h.tidylon(lon)) + '_' + str(lat)
-
-			data['data_keys'] = []
-			data['units'] = []
-			if var == 'temp':
-				data['data_keys'].append('rg09_temperature')
-				data['units'].append('degree celcius (ITS-90)')
-			elif var == 'psal':
-				data['data_keys'].append('rg09_salinity')
-				data['units'].append('psu')
+			data['_id'] = data['timestamp'].strftime('%Y%m%d%H%M%S') + '_' + str(h.tidylon(lon)) + '_' + str(lat)				
 
 			if var == 'temp' and grid =='anom':
 				data['data'] = list(clim['ARGO_TEMPERATURE_ANOMALY'].loc[dict(LONGITUDE=lon, LATITUDE=lat, TIME=t)].data)
@@ -107,16 +108,14 @@ for t in timesteps:
 			data['data'] = [[round(float(x),6) for x in data['data']]]
 
 			# check and see if this lat/long/timestamp lattice point already exists
-			record = db['grid_1_1_0.5_0.5'].find_one(data['_id'])
+			record = db['rg09'].find_one(data['_id'])
 			if record:
 				# append and replace
 				record['metadata'] = record['metadata'] + data['metadata']
-				record['data_keys'] = record['data_keys'] + data['data_keys']
 				record['data'] = record['data'] + data['data']
-				record['units'] = record['units'] + data['units']
 
 				try:
-					db['grid_1_1_0.5_0.5'].replace_one({'_id': data['_id']}, record)
+					db['rg09'].replace_one({'_id': data['_id']}, record)
 				except BaseException as err:
 					print('error: db write replace failure')
 					print(err)
@@ -124,7 +123,7 @@ for t in timesteps:
 			else:
 				# insert new record
 				try:
-					db['grid_1_1_0.5_0.5'].insert_one(data)
+					db['rg09'].insert_one(data)
 				except BaseException as err:
 					print('error: db write insert failure')
 					print(err)

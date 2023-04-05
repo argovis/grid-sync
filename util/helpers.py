@@ -16,6 +16,7 @@ def find_basin(basins, lon, lat):
     gridspacing = 0.5
 
     basin = basins['BASIN_TAG'].sel(LONGITUDE=lon, LATITUDE=lat, method="nearest").to_dict()['data']
+
     if math.isnan(basin):
         # nearest point was on land - find the nearest non nan instead.
         lonplus = math.ceil(lon / gridspacing)*gridspacing
@@ -35,4 +36,5 @@ def find_basin(basins, lon, lat):
         else:
             grids.sort(key=lambda tup: tup[1])
             basin = grids[0][0]
+
     return int(basin)

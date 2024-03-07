@@ -53,7 +53,7 @@ meta['source'] = [{
 	'url': 'https://doi.org/10.5281/zenodo.6131625'
 }]
 meta['levels'] = [15] # really anywhere from 15-300
-meta['level_units'] = 'dbar'
+meta['level_units'] = 'integral from 15 dbar to 300 dbar'
 
 meta['data_info'] = [
 	['kg21_ohc15to300'],

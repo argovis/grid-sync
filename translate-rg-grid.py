@@ -67,6 +67,7 @@ meta['source'] = [{
 }]
 meta['levels'] = list(clim['PRESSURE'].data)
 meta['levels'] = [float(x) for x in meta['levels']]
+meta['level_units'] = "dbar"
 
 # write metadata to grid metadata collection
 try:

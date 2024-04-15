@@ -68,6 +68,20 @@ meta['source'] = [{
 meta['levels'] = list(clim['PRESSURE'].data)
 meta['levels'] = [float(x) for x in meta['levels']]
 meta['level_units'] = "dbar"
+meta['lattice'] = {
+		"center" : [
+			0.5,
+			0.5
+		],
+		"spacing" : [
+			1,
+			1
+		],
+		"minLat" : -64.5,	# these should probably by live-recomputed in future
+		"minLon" : -179.5,
+		"maxLat" : 79.5,
+		"maxLon" : 179.5
+	}
 
 # write metadata to grid metadata collection
 try:

@@ -61,6 +61,21 @@ meta['data_info'] = [
 	[['J/m^2']]
 ]
 
+meta['lattice'] = {
+		"center" : [
+			0.5,
+			0.5
+		],
+		"spacing" : [
+			1,
+			1
+		],
+		"minLat" : -64.5,  # should recompute in future updates
+		"minLon" : -179.5,
+		"maxLat" : 64.5,
+		"maxLon" : 179.5
+	}
+
 # write metadata to grid metadata collection
 try:
 	db['kg21Meta'].insert_one(meta)

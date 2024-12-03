@@ -6,23 +6,23 @@ metadata:
     tier: api
 spec:
   volumes:
-    - name: ccmp
+    - name: rg
       persistentVolumeClaim:
-        claimName: ccmp
+        claimName: rg
   containers:
   - name: schema
     imagePullPolicy: Always
     image: argovis/grid-sync:dev
-    command: ['sleep', '1000000']
-    #command: ['bash', 'rg-update.sh']
+    #command: ['sleep', '1000000']
+    command: ['bash', 'append_rg_month.sh', '2024', '10']
     volumeMounts:
-      - mountPath: "/tmp"
-        name: ccmp
+      - mountPath: "/tmp/rg"
+        name: rg
     resources:
       requests:
         memory: "0Gi"
         cpu: "0m"
       limits:
         memory: 1000Mi
-        cpu: 500m
+        cpu: 1000m
   restartPolicy: Never

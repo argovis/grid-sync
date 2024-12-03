@@ -11,3 +11,6 @@ python translate-rg-grid.py psal total ${1}${2} /tmp/rg/RG_ArgoClim_${1}${2}_201
 
 # delete upstream file
 rm /tmp/rg/RG_ArgoClim_${1}${2}_2019.nc
+
+# update the time bounds in the rate limiter summary
+python update_ratelimiter_summary.py rg09

@@ -39,3 +39,20 @@ spec:
         cpu: 1000m
   restartPolicy: Never
 ```
+
+### RG from scratch
+
+Consider adding more current months to the following scripts, and:
+
+```
+bash rg-temp-total-batch.sh
+bash rg-psal-total-batch.sh
+python update_ratelimiter_summary.py rg09
+```
+
+### KG from scratch
+
+```
+python translate-ohc-grid.py
+python update_ratelimiter_summary.py kg21
+```

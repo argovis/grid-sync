@@ -7,9 +7,6 @@ collection = sys.argv[1]
 client = MongoClient('mongodb://database/argo')
 db = client.argo
 
-# Fetch the summary document
-summary_doc = db['summaries'].find_one({'_id': 'ratelimiter'})
-
 # Find the earliest and latest timestamps in the 'rg09' collection
 earliest_doc = db[collection].find_one(sort=[('timestamp', 1)])
 latest_doc = db[collection].find_one(sort=[('timestamp', -1)])
@@ -18,9 +15,19 @@ latest_doc = db[collection].find_one(sort=[('timestamp', -1)])
 start_date = earliest_doc['timestamp']
 end_date = latest_doc['timestamp']
 
-# Update the summary document
-summary_doc['metadata'][collection]['startDate'] = start_date
-summary_doc['metadata'][collection]['endDate'] = end_date
+# Upcert the summary document
+summary_doc = db['summaries'].find_one({'_id': 'ratelimiter'})
+entry = {"metagroups": ["id"], "startDate": start_date, "endDate": end_date}
+
+if summary_doc:
+    summary_doc['metadata'][collection] = entry
+else:
+    summary_doc = {
+        '_id': 'ratelimiter',
+        'metadata': {
+            collection: entry
+        }
+    }
 
 # Write the summary document back to the database using upsert
 result = db['summaries'].update_one(

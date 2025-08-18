@@ -4,9 +4,9 @@ This repo contains scripts to translate upstream gridded products from their ori
 
 ### updating RG
 
-New data comes out for RG every month; `append_rg_month.sh` handles the database update and summary updates. An minimal example pod to run this update is below, where:
+New data comes out for RG every month; `append_rg_month.sh` handles the database update and summary updates. An minimal example pod to run this update for the next month not currently written to Argovis is below, where:
 
- - `argovis/grid-sync:dev` is built from `Dockerfile`
+ - `argovis/grid-sync:250812` is built from `Dockerfile`
  - The PVC `rg` is pre-populated with the base RG temperature and salinity grids (2000-2019).
 
 ```
@@ -24,9 +24,9 @@ spec:
   containers:
   - name: schema
     imagePullPolicy: Always
-    image: argovis/grid-sync:dev
+    image: argovis/grid-sync:250812
     #command: ['sleep', '1000000']
-    command: ['bash', 'append_rg_month.sh', '2024', '05']
+    command: ['bash', 'append_rg_month.sh']
     volumeMounts:
       - mountPath: "/tmp/rg"
         name: rg

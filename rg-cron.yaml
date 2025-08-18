@@ -1,0 +1,39 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: rg-sync
+spec:
+  schedule: "0 23 * * 6"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          name: rg-sync
+          labels:
+            tier: api
+        spec:
+          volumes:
+            - name: rg
+              persistentVolumeClaim:
+                claimName: rg
+          containers:
+          - name: schema
+            imagePullPolicy: Always
+            image: argovis/grid-sync:250812
+            #command: ['sleep', '1000000']
+            command: ['bash', 'append_rg_month.sh']
+            volumeMounts:
+              - mountPath: "/tmp/rg"
+                name: rg
+            resources:
+              requests:
+                memory: "0Gi"
+                cpu: "0m"
+              limits:
+                memory: 1000Mi
+                cpu: 1000m
+          restartPolicy: Never
+          securityContext:
+            runAsUser: 1000660000
+            runAsGroup: 1000660000

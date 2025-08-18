@@ -25,8 +25,8 @@ spec:
   - name: schema
     imagePullPolicy: Always
     image: argovis/grid-sync:250812
-    command: ['sleep', '1000000']
-    #command: ['bash', 'append_rg_month.sh']
+    #command: ['sleep', '1000000']
+    command: ['bash', 'append_rg_month.sh']
     volumeMounts:
       - mountPath: "/tmp/rg"
         name: rg

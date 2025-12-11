@@ -50,9 +50,9 @@ bash rg-psal-total-batch.sh
 python update_ratelimiter_summary.py rg09
 ```
 
-### KG from scratch
+### localGPspace from scratch
 
 ```
 python translate-ohc-grid.py
-python update_ratelimiter_summary.py kg21
+python update_ratelimiter_summary.py localGPspace
 ```

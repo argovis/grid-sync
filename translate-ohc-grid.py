@@ -44,7 +44,7 @@ lonpoints = [float(x) for x in list(bfr['LONGITUDE'].data)]
 tidylon = [h.tidylon(x) for x in lonpoints]
 
 meta = {}
-meta['_id'] = "kg21_ohc15to300"
+meta['_id'] = "localGPspace_ohc15to300"
 meta['data_type'] = 'ocean_heat_content'
 meta['date_updated_argovis'] = datetime.datetime.now()
 meta['source'] = [{
@@ -56,7 +56,7 @@ meta['levels'] = [15] # really anywhere from 15-300
 meta['level_units'] = 'integral from 15 dbar to 300 dbar'
 
 meta['data_info'] = [
-	['kg21_ohc15to300'],
+	['localGPspace_ohc15to300'],
 	['units'],
 	[['J/m^2']]
 ]
@@ -78,7 +78,7 @@ meta['lattice'] = {
 
 # write metadata to grid metadata collection
 try:
-	db['kg21Meta'].insert_one(meta)
+	db['localGPspaceMeta'].insert_one(meta)
 except BaseException as err:
 	print('error: db write failure')
 	print(err)
@@ -90,7 +90,7 @@ for t in timesteps:
 	for lat in latpoints:
 		for lon in lonpoints:
 			data = {
-				"metadata": ["kg21_ohc15to300"],
+				"metadata": ["localGPspace_ohc15to300"],
 				"geolocation": {"type":"Point", "coordinates":[h.tidylon(lon),lat]},
 				"basin": h.find_basin(basins, h.tidylon(lon), lat),
 				"timestamp": datetime.datetime.utcfromtimestamp(ts),
@@ -106,14 +106,14 @@ for t in timesteps:
 			data['data'] = [[round(float(x),6) for x in data['data']]]
 
 			# check and see if this lat/long/timestamp lattice point already exists
-			record = db['kg21'].find_one(data['_id'])
+			record = db['localGPspace'].find_one(data['_id'])
 			if record:
 				# append and replace
 				record['metadata'] = record['metadata'] + data['metadata']
 				record['data'] = record['data'] + data['data']
 
 				try:
-					db['kg21'].replace_one({'_id': data['_id']}, record)
+					db['localGPspace'].replace_one({'_id': data['_id']}, record)
 				except BaseException as err:
 					print('error: db write replace failure')
 					print(err)
@@ -121,7 +121,7 @@ for t in timesteps:
 			else:
 				# insert new record
 				try:
-					db['kg21'].insert_one(data)
+					db['localGPspace'].insert_one(data)
 				except BaseException as err:
 					print('error: db write insert failure')
 					print(err)

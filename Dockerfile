@@ -1,6 +1,6 @@
 FROM python:3.9
 
-RUN apt-get update -y
+RUN apt-get update -y && apt-get upgrade -y
 RUN apt-get install -y nano rsync jq
 RUN apt-get upgrade -y zlib1g subversion
 RUN pip install nose netCDF4 pymongo xarray numpy geopy scipy

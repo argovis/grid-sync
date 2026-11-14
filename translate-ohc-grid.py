@@ -3,12 +3,12 @@
 
 import pandas as pd
 import numpy as np
-import scipy.io, datetime
+import scipy.io, datetime, os
 import xarray as xr
 from pymongo import MongoClient
 import util.helpers as h
 
-client = MongoClient('mongodb://database/argo')
+client = MongoClient(os.getenv("MONGOCONNECT"))
 db = client.argo
 basins = xr.open_dataset('parameters/basinmask_01.nc')
 

@@ -1,10 +1,10 @@
 from pymongo import MongoClient, UpdateOne
-import sys
+import sys, os
 
 collection = sys.argv[1]
 
 # Connect to the MongoDB instance
-client = MongoClient('mongodb://database/argo')
+client = MongoClient(os.getenv("MONGOCONNECT"))
 db = client.argo
 
 # Find the earliest and latest timestamps in the 'rg09' collection
